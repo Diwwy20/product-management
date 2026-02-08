@@ -53,7 +53,7 @@ Before running the application, ensure you have the following installed:
 ### 1. Clone the Repository
 ```bash
 git clone https://github.com/Diwwy20/product-management
-cd product-management-challenge
+cd product-management
 ```
 
 ### 2. Backend Setup
