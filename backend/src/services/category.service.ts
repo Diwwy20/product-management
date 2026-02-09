@@ -8,6 +8,7 @@ import {
 } from "../interfaces/category.interface";
 import { AppError } from "../utils/appError";
 import { HttpCode } from "../constants/httpCodes";
+import { ProductModel } from "../models/product.model";
 
 export class CategoryService {
   private categoryRepo = new CategoryRepository();
@@ -20,7 +21,6 @@ export class CategoryService {
     const skip = (page - 1) * limit;
 
     const filter = {
-      deletedAt: null,
       ...(query.search && {
         $or: [
           { nameEn: { $regex: query.search, $options: "i" } },
@@ -77,22 +77,30 @@ export class CategoryService {
     data: UpdateCategoryDTO,
   ): Promise<ICategory> {
     const category = await this.categoryRepo.update(id, data);
-    if (!category) {
-      throw new AppError(
-        HttpCode.NOT_FOUND,
-        "Category not found or already deleted",
-      );
+    if (!category) throw new AppError(HttpCode.NOT_FOUND, "Category not found");
+
+    if (data.isActive === false) {
+      await ProductModel.updateMany({ categoryId: id }, { isActive: false });
     }
+
     return category;
   }
 
   async deleteCategory(id: string, isHardDelete = false): Promise<void> {
-    const result = isHardDelete
-      ? await this.categoryRepo.hardDelete(id)
-      : await this.categoryRepo.softDelete(id);
+    if (isHardDelete) {
+      await ProductModel.deleteMany({ categoryId: id });
 
-    if (!result) {
-      throw new AppError(HttpCode.NOT_FOUND, "Category not found");
+      const result = await this.categoryRepo.hardDelete(id);
+      if (!result)
+        throw new AppError(HttpCode.NOT_FOUND, "ไม่พบหมวดหมู่ที่ต้องการลบ");
+    } else {
+      const result = await this.categoryRepo.softDelete(id);
+      if (!result) throw new AppError(HttpCode.NOT_FOUND, "ไม่พบหมวดหมู่");
+
+      await ProductModel.updateMany(
+        { categoryId: id, deletedAt: null },
+        { isActive: false },
+      );
     }
   }
 }

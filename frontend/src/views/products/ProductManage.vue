@@ -5,14 +5,16 @@ import { useToast } from 'vue-toastification';
 import { useRouter } from 'vue-router';
 
 import { ProductService } from '@/services/product.service';
-import { AppPath, DeleteMode } from '@/constants/constants';
+import { CategoryService } from '@/services/category.service'; 
+import { AppPath, DelayDebounce, DeleteMode } from '@/constants/constants';
 import { getImageUrl } from '@/utils/format';
 import type { IProduct, IPagination } from '@/interfaces/product.interface';
+import type { ICategory } from '@/interfaces/category.interface';
 
 import { 
-  Plus, Search, Edit2, Trash2, XCircle, 
-  PackageSearch, Loader2, ChevronLeft, 
-  ChevronRight, Image as ImageIcon 
+  Plus, Search, Edit2, Trash2, Loader2, 
+  ChevronLeft, ChevronRight, Image as ImageIcon,
+  AlertCircle, PackageSearch, XCircle, Filter
 } from 'lucide-vue-next';
 
 import ConfirmModal from '@/components/ConfirmModal.vue';
@@ -22,14 +24,15 @@ const toast = useToast();
 const router = useRouter();
 
 const products = ref<IProduct[]>([]);
+const categories = ref<ICategory[]>([]); 
 const pagination = ref<IPagination>({ page: 1, totalPages: 1, limit: 10, total: 0 });
 const loading = ref<boolean>(false);
 const searchQuery = ref<string>('');
+const selectedCategory = ref<string>(''); 
 
 const deleteModal = reactive({
   show: false,
   id: '',
-  mode: DeleteMode.SOFT as DeleteMode,
   title: '',
   message: ''
 });
@@ -37,7 +40,12 @@ const deleteModal = reactive({
 const fetchProducts = async (page = 1) => {
   loading.value = true;
   try {
-    const res = await ProductService.getAll({ page, search: searchQuery.value, limit: 10 });
+    const res = await ProductService.getAll({ 
+      page, 
+      search: searchQuery.value, 
+      categoryId: selectedCategory.value, 
+      limit: 10 
+    });
     products.value = res.data;
     pagination.value = res.pagination;
   } catch (err) {
@@ -47,23 +55,40 @@ const fetchProducts = async (page = 1) => {
   }
 };
 
-const triggerDelete = (id: string, mode: DeleteMode) => {
-  deleteModal.id = id;
-  deleteModal.mode = mode;
-  deleteModal.title = mode === DeleteMode.HARD ? t('common.delete_hard') : t('common.delete');
-  deleteModal.message = mode === DeleteMode.HARD ? t('common.delete_warning') : t('product.delete_confirm');
+const fetchCategories = async () => {
+  try {
+    const res = await CategoryService.getAll({ limit: 100 });
+    categories.value = res.data;
+  } catch (err) {
+    console.error("Failed to load categories");
+  }
+};
+
+const handleToggleStatus = async (item: IProduct) => {
+  try {
+    const newStatus = !item.isActive;
+    await ProductService.update(item.id, { isActive: newStatus });
+    toast.success(newStatus ? 'เปิดการจำหน่ายสินค้าแล้ว' : 'ปิดการจำหน่ายสินค้าแล้ว');
+    item.isActive = newStatus;
+  } catch (err: any) {
+    toast.error(t('common.error'));
+  }
+};
+
+const triggerHardDelete = (item: IProduct) => {
+  const displayName = locale.value === 'th' ? item.nameTh : item.nameEn;
+  deleteModal.id = item.id;
+  deleteModal.title = t('common.delete_hard');
+  deleteModal.message = `คุณกำลังจะลบสินค้า "${displayName}" ออกจากระบบถาวร ข้อมูลสต็อกและรูปภาพจะหายไปทั้งหมด ยืนยันหรือไม่?`;
   deleteModal.show = true;
 };
 
-const handleConfirmDelete = async () => {
+const handleConfirmHardDelete = async () => {
   try {
     deleteModal.show = false;
     loading.value = true;
-    await ProductService.delete(deleteModal.id, deleteModal.mode);
-    
-    toast.success(
-      deleteModal.mode === DeleteMode.HARD ? t('common.success') : t('category.delete_success')
-    );
+    await ProductService.delete(deleteModal.id, DeleteMode.HARD);
+    toast.success('ลบสินค้าถาวรเรียบร้อยแล้ว');
     fetchProducts(pagination.value.page);
   } catch (err: any) {
     toast.error(err.response?.data?.message || t('common.error'));
@@ -78,85 +103,134 @@ const goToEdit = (id: string) => {
 };
 
 let debounceTimeout: ReturnType<typeof setTimeout>;
-watch(searchQuery, () => {
+watch([searchQuery, selectedCategory], () => {
   clearTimeout(debounceTimeout);
-  debounceTimeout = setTimeout(() => { fetchProducts(1); }, 500);
+  debounceTimeout = setTimeout(() => { fetchProducts(1); }, DelayDebounce.DELAY);
 });
 
-onMounted(() => fetchProducts());
+onMounted(() => {
+  fetchProducts();
+  fetchCategories();
+});
 </script>
 
 <template>
   <div class="space-y-6">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-      <div>
+      <div class="space-y-1">
         <h1 class="text-4xl font-black text-slate-900 tracking-tighter uppercase italic">{{ t('product.title') }}</h1>
-        <p class="text-slate-400 text-sm font-bold uppercase tracking-widest mt-1">{{ t('product.desc') }}</p>
+        <p class="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] flex items-center gap-2">
+          <AlertCircle :size="14" class="text-blue-500" /> {{ t('product.desc') }}
+        </p>
       </div>
-      <router-link :to="AppPath.PRODUCT_CREATE" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl flex items-center gap-3 font-black shadow-xl shadow-blue-200 transition-all active:scale-95 text-sm uppercase tracking-widest">
-        <Plus :size="20" /> {{ t('product.add_btn') }}
+      <router-link :to="AppPath.PRODUCT_CREATE" class="bg-slate-900 hover:bg-blue-600 text-white px-8 py-4 rounded-[1.5rem] flex items-center gap-3 font-black shadow-xl transition-all active:scale-95 text-xs uppercase tracking-widest group">
+        <Plus :size="20" class="group-hover:rotate-90 transition-transform duration-300" /> {{ t('product.add_btn') }}
       </router-link>
     </div>
 
-    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-4">
-      <div class="relative flex-1 max-w-xl">
+    <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col md:flex-row items-center gap-4">
+      <div class="relative flex-1 w-full">
         <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" :size="20" />
-        <input v-model="searchQuery" type="text" :placeholder="t('product.search_placeholder')" class="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-blue-500 outline-none transition-all font-bold text-slate-700">
+        <input 
+          v-model="searchQuery" 
+          type="text" 
+          :placeholder="t('product.search_placeholder')" 
+          class="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-[1.2rem] focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-700 transition-all"
+        >
+      </div>
+
+      <div class="relative w-full md:w-72">
+        <Filter class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" :size="18" />
+        <select 
+          v-model="selectedCategory"
+          class="w-full pl-12 pr-10 py-4 bg-slate-50 border-none rounded-[1.2rem] focus:ring-2 focus:ring-blue-500 outline-none font-bold text-slate-700 appearance-none cursor-pointer"
+        >
+          <option value="">{{ t('home.all_categories') }}</option>
+          <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+            {{ locale === 'th' ? cat.nameTh : cat.nameEn }}
+          </option>
+        </select>
       </div>
     </div>
 
-    <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-50 overflow-hidden">
+    <div class="bg-white rounded-[3rem] shadow-2xl shadow-slate-200/50 border border-slate-50 overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-left">
-          <thead class="bg-slate-50/50 border-b border-slate-100">
+          <thead class="bg-white border-b border-slate-100">
             <tr>
-              <th class="p-6 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">{{ t('product.col_sku') }}</th>
-              <th class="p-6 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">{{ t('product.col_name') }}</th>
-              <th class="p-6 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">{{ t('product.col_category') }}</th>
-              <th class="p-6 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-right">{{ t('product.col_price') }}</th>
-              <th class="p-6 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-center">{{ t('product.col_stock') }}</th>
-              <th class="p-6 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-center">{{ t('common.actions') }}</th>
+              <th class="p-8 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">{{ t('product.col_sku') }}</th>
+              <th class="p-8 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">{{ t('product.col_name') }}</th>
+              <th class="p-8 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">หมวดหมู่</th>
+              <th class="p-8 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-center">สถานะการขาย</th>
+              <th class="p-8 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-center">{{ t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-50">
-            <tr v-if="loading"><td colspan="6" class="p-24 text-center"><Loader2 class="animate-spin mx-auto text-blue-600 mb-4" :size="48" /></td></tr>
-            <tr v-else-if="products.length === 0"><td colspan="6" class="p-24 text-center"><PackageSearch class="mx-auto mb-4 opacity-10" :size="80" /></td></tr>
+            <tr v-if="loading"><td colspan="5" class="p-32 text-center"><Loader2 class="animate-spin mx-auto text-blue-600" :size="48" /></td></tr>
+            <tr v-else-if="products.length === 0"><td colspan="5" class="p-32 text-center"><PackageSearch class="mx-auto mb-4 opacity-10" :size="80" /><p class="font-black uppercase tracking-widest text-slate-300">ไม่พบข้อมูลสินค้า</p></td></tr>
             
-            <tr v-for="item in products" :key="item.id" class="hover:bg-slate-50/50 transition-colors group">
-              <td class="p-6"><span class="bg-slate-100 px-3 py-1.5 rounded-xl font-mono text-[10px] font-black text-slate-500 uppercase">{{ item.sku }}</span></td>
-              <td class="p-6">
+            <tr v-for="item in products" :key="item.id" class="hover:bg-slate-50/30 transition-colors group">
+              <td class="p-8"><span class="bg-slate-100 px-3 py-1.5 rounded-xl font-mono text-[10px] font-black text-slate-500 uppercase tracking-tighter">{{ item.sku }}</span></td>
+              <td class="p-8">
                 <div class="flex items-center gap-4">
-                  <div class="w-12 h-12 rounded-2xl bg-slate-100 overflow-hidden flex items-center justify-center border border-slate-50 shadow-inner">
+                  <div class="w-14 h-14 rounded-2xl bg-slate-100 overflow-hidden flex items-center justify-center border border-slate-50 shadow-inner">
                     <img v-if="item.images?.length" :src="getImageUrl(item.images[0])" class="w-full h-full object-cover">
-                    <ImageIcon v-else :size="18" class="text-slate-300" />
+                    <ImageIcon v-else :size="20" class="text-slate-300" />
                   </div>
                   <div class="flex flex-col">
-                    <p class="font-black text-slate-800 line-clamp-1 text-sm">{{ locale === 'th' ? item.nameTh : item.nameEn }}</p>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{{ locale === 'th' ? item.nameEn : item.nameTh }}</p>
+                    <p class="font-black text-slate-800 text-sm line-clamp-1">{{ locale === 'th' ? item.nameTh : item.nameEn }}</p>
+                    <p class="text-blue-600 font-black text-sm mt-1">฿{{ item.price.toLocaleString() }}</p>
                   </div>
                 </div>
               </td>
-              <td class="p-6"><span class="text-xs font-black text-blue-600 uppercase tracking-tighter bg-blue-50 px-3 py-1 rounded-lg">{{ typeof item.categoryId === 'object' ? (locale === 'th' ? item.categoryId.nameTh : item.categoryId.nameEn) : '-' }}</span></td>
-              <td class="p-6 text-right font-black text-slate-900 text-lg">฿{{ item.price.toLocaleString() }}</td>
-              <td class="p-6 text-center"><div :class="item.stock > 10 ? 'text-green-600 bg-green-50' : item.stock > 0 ? 'text-orange-500 bg-orange-50' : 'text-red-600 bg-red-50'" class="inline-block px-4 py-1.5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm">{{ item.stock }}</div></td>
-              <td class="p-6">
-                <div class="flex items-center justify-center gap-1">
-                  <button @click="goToEdit(item.id)" class="cursor-pointer p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-[1.2rem] transition-all active:scale-90"><Edit2 :size="18" /></button>
-                  
-                  <button @click="triggerDelete(item.id, DeleteMode.SOFT)" class="cursor-pointer p-3 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-[1.2rem] transition-all active:scale-90"><Trash2 :size="18" /></button>
-                  <button @click="triggerDelete(item.id, DeleteMode.HARD)" class="cursor-pointer p-3 text-slate-200 hover:text-red-600 hover:bg-red-50 rounded-[1.2rem] transition-all active:scale-90"><XCircle :size="18" /></button>
+              <td class="p-8">
+                <div class="flex flex-col gap-1">
+                  <span class="text-xs font-black text-slate-500 uppercase tracking-tight">
+                    {{ (item.categoryId && typeof item.categoryId === 'object') ? (locale === 'th' ? item.categoryId.nameTh : item.categoryId.nameEn) : '-' }}
+                  </span>
+                  <span v-if="typeof item.categoryId === 'object' && item.categoryId?.isActive === false" class="text-[9px] font-bold text-red-400 uppercase italic flex items-center gap-1">
+                    <XCircle :size="10" /> (หมวดหมู่ปิดอยู่)
+                  </span>
+                </div>
+              </td>
+
+              <td class="p-8 text-center">
+                <div class="flex items-center justify-center">
+                  <label :for="'toggle-prod-' + item.id" class="flex items-center cursor-pointer select-none">
+                    <div class="relative">
+                      <input type="checkbox" :id="'toggle-prod-' + item.id" class="sr-only" :checked="item.isActive" @change="handleToggleStatus(item)">
+                      <div class="block w-14 h-8 rounded-full transition-colors duration-300 shadow-inner" :class="item.isActive ? 'bg-green-500' : 'bg-slate-200'"></div>
+                      <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform duration-300 shadow-md flex items-center justify-center" :class="item.isActive ? 'translate-x-6' : 'translate-x-0'">
+                        <div v-if="item.isActive" class="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </td>
+
+              <td class="p-8 text-center">
+                <div class="flex items-center justify-center gap-3">
+                  <button @click="goToEdit(item.id)" class="p-4 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-[1.2rem] transition-all cursor-pointer active:scale-90 bg-slate-50 group/btn">
+                    <Edit2 :size="18" class="group-hover/btn:scale-110 transition-transform" />
+                  </button>
+                  <button @click="triggerHardDelete(item)" class="p-4 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-[1.2rem] transition-all cursor-pointer active:scale-90 bg-slate-50 group/btn">
+                    <Trash2 :size="18" class="group-hover/btn:scale-110 transition-transform" />
+                  </button>
                 </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-      <div v-if="pagination.totalPages > 1" class="p-8 bg-slate-50/30 border-t border-slate-100 flex items-center justify-between">
-        <p class="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">{{ t('home.total_items') }}: {{ pagination.total }}</p>
-        <div class="flex items-center gap-3">
-          <button :disabled="pagination.page === 1" @click="fetchProducts(pagination.page - 1)" class="cursor-pointer p-3 rounded-2xl border-2 border-slate-100 bg-white hover:bg-slate-50 disabled:opacity-20 transition shadow-sm active:scale-90"><ChevronLeft :size="20" /></button>
-          <div class="bg-white border-2 border-slate-100 px-6 py-2.5 rounded-2xl font-black text-slate-900 shadow-sm text-sm">{{ pagination.page }} / {{ pagination.totalPages }}</div>
-          <button :disabled="pagination.page === pagination.totalPages" @click="fetchProducts(pagination.page + 1)" class="cursor-pointer p-3 rounded-2xl border-2 border-slate-100 bg-white hover:bg-slate-50 disabled:opacity-20 transition shadow-sm active:scale-90"><ChevronRight :size="20" /></button>
+
+      <div v-if="pagination.totalPages > 1" class="p-8 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
+        <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+          SHOWING {{ products.length }} OF {{ pagination.total }} PRODUCTS
+        </span>
+        <div class="flex items-center gap-2">
+          <button :disabled="pagination.page === 1" @click="fetchProducts(pagination.page - 1)" class="cursor-pointer p-4 rounded-2xl bg-white border border-slate-100 hover:bg-slate-900 hover:text-white disabled:opacity-20 transition-all active:scale-90 shadow-sm"><ChevronLeft :size="20" /></button>
+          <div class="bg-white border-2 border-slate-100 px-6 py-2.5 rounded-2xl font-black text-slate-900 shadow-sm text-xs tracking-widest">{{ pagination.page }} / {{ pagination.totalPages }}</div>
+          <button :disabled="pagination.page === pagination.totalPages" @click="fetchProducts(pagination.page + 1)" class="cursor-pointer p-4 rounded-2xl bg-white border border-slate-100 hover:bg-slate-900 hover:text-white disabled:opacity-20 transition-all active:scale-90 shadow-sm"><ChevronRight :size="20" /></button>
         </div>
       </div>
     </div>
@@ -165,11 +239,16 @@ onMounted(() => fetchProducts());
       :is-open="deleteModal.show"
       :title="deleteModal.title"
       :message="deleteModal.message"
-      :confirm-text="t('common.confirm')"
-      :cancel-text="t('common.cancel')"
-      :variant="deleteModal.mode === DeleteMode.HARD ? 'danger' : 'warning'"
-      @confirm="handleConfirmDelete"
+      confirm-text="ยืนยันการลบถาวร"
+      cancel-text="ยกเลิก"
+      variant="danger"
+      @confirm="handleConfirmHardDelete"
       @cancel="deleteModal.show = false"
     />
   </div>
 </template>
+
+<style scoped>
+.overflow-x-auto::-webkit-scrollbar { height: 6px; }
+.overflow-x-auto::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+</style>

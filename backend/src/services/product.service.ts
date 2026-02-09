@@ -21,9 +21,12 @@ export class ProductService {
     const limit = Math.max(1, Number(query.limit || 10));
     const skip = (page - 1) * limit;
 
-    const filter = {
+    const filter: any = {
       deletedAt: null,
       ...(query.categoryId && { categoryId: query.categoryId }),
+      ...(query.isActive !== undefined && {
+        isActive: query.isActive === "true",
+      }),
       ...(query.search && {
         $or: [
           { nameEn: { $regex: query.search, $options: "i" } },
@@ -37,12 +40,7 @@ export class ProductService {
 
     return {
       data,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
+      pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
 

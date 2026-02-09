@@ -40,4 +40,5 @@ export interface ProductQueryParams {
   categoryId?: string;
   minPrice?: string;
   maxPrice?: string;
+  isActive?: string;
 }

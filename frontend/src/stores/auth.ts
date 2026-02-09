@@ -33,6 +33,18 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
+    async fetchProfile() {
+      try {
+        this.loading = true;
+        const profile = await AuthService.getProfile();
+        this.user = profile.data;
+      } catch (error) {
+        // console.error("Fetch profile failed", error);
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async refresh() {
       try {
         const data = await AuthService.refreshToken();

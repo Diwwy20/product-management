@@ -4,15 +4,11 @@ import type {
   IProduct,
   IProductInput,
   IProductResponse,
+  ProductQueryParams,
 } from "@/interfaces/product.interface";
 
 export const ProductService = {
-  async getAll(params: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    categoryId?: string;
-  }): Promise<IProductResponse> {
+  async getAll(params: ProductQueryParams): Promise<IProductResponse> {
     const { data } = await api.get<IProductResponse>("/products", { params });
     return data;
   },

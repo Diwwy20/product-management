@@ -9,6 +9,7 @@ export const AppPath = {
   LOGIN: "/login",
   REGISTER: "/register",
   FORGOT_PASSWORD: "/forgot-password",
+  RESET_PASSWORD: "/reset-password",
   VERIFY_OTP: "/verify-otp",
   PROFILE: "/profile",
 
@@ -26,3 +27,7 @@ export const DeleteMode = {
   HARD: "hard",
 } as const;
 export type DeleteMode = (typeof DeleteMode)[keyof typeof DeleteMode];
+
+export const DelayDebounce = {
+  DELAY: 500,
+} as const;

@@ -14,6 +14,7 @@ export interface ICategoryInput {
   nameTh: string;
   descriptionEn?: string;
   descriptionTh?: string;
+  isActive?: boolean;
 }
 
 export interface IPagination {

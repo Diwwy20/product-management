@@ -67,4 +67,12 @@ export const AuthService = {
   async changePassword(payload: IChangePasswordDTO): Promise<void> {
     await api.put("/auth/me/change-password", payload);
   },
+
+  async resetPassword(payload: {
+    token: string;
+    newPassword: string;
+  }): Promise<any> {
+    const { data } = await api.post("/auth/reset-password", payload);
+    return data;
+  },
 };

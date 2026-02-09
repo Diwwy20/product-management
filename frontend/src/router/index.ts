@@ -83,6 +83,12 @@ const routes: RouteRecordRaw[] = [
     name: "ForgotPassword",
     component: () => import("@/views/auth/ForgotPassword.vue"),
   },
+  {
+    path: AppPath.RESET_PASSWORD, // '/reset-password'
+    name: "ResetPassword",
+    component: () => import("@/views/auth/ResetPassword.vue"),
+    meta: { guest: true }, // ให้คนที่ไม่ล็อกอินเข้าได้เท่านั้น
+  },
 
   // 404 Redirect
   {

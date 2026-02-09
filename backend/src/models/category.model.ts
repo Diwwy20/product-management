@@ -49,12 +49,4 @@ const categorySchema = new Schema<ICategory>(
   },
 );
 
-categorySchema.pre(/^find/, function (this: Query<unknown, ICategory>) {
-  const filter = this.getFilter();
-
-  if (filter.deletedAt === undefined) {
-    this.where({ deletedAt: null });
-  }
-});
-
 export const CategoryModel = model<ICategory>("Category", categorySchema);

@@ -33,6 +33,17 @@ export interface IProductInput {
   sku: string;
   categoryId: string;
   images?: string[];
+  isActive?: boolean;
+}
+
+export interface ProductQueryParams {
+  page?: number | string;
+  limit?: number | string;
+  search?: string;
+  categoryId?: string;
+  isActive?: string | boolean;
+  minPrice?: number | string;
+  maxPrice?: number | string;
 }
 
 export interface IProductResponse {

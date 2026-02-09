@@ -13,7 +13,7 @@ const handleLogout = async () => {
 };
 
 const toggleLanguage = () => {
-  locale.value === 'en' ? 'th' : 'en'
+  locale.value = locale.value === 'en' ? 'th' : 'en'
 };
 </script>
 

@@ -124,7 +124,7 @@ onMounted(fetchData);
 </script>
 
 <template>
-  <div class="max-w-5xl mx-auto space-y-8 py-10 px-4">
+  <div class="mx-auto space-y-8 py-10 px-4">
     <div class="flex items-center gap-6">
       <button 
         @click="router.back()" 
