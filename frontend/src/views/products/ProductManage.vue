@@ -68,7 +68,7 @@ const handleToggleStatus = async (item: IProduct) => {
   try {
     const newStatus = !item.isActive;
     await ProductService.update(item.id, { isActive: newStatus });
-    toast.success(newStatus ? 'เปิดการจำหน่ายสินค้าแล้ว' : 'ปิดการจำหน่ายสินค้าแล้ว');
+    toast.success(newStatus ? t('product.activate_success') : t('product.deactivate_success'));
     item.isActive = newStatus;
   } catch (err: any) {
     toast.error(t('common.error'));
@@ -79,7 +79,7 @@ const triggerHardDelete = (item: IProduct) => {
   const displayName = locale.value === 'th' ? item.nameTh : item.nameEn;
   deleteModal.id = item.id;
   deleteModal.title = t('common.delete_hard');
-  deleteModal.message = `คุณกำลังจะลบสินค้า "${displayName}" ออกจากระบบถาวร ข้อมูลสต็อกและรูปภาพจะหายไปทั้งหมด ยืนยันหรือไม่?`;
+  deleteModal.message = t('product.delete_hard_confirm', { name: displayName });
   deleteModal.show = true;
 };
 
@@ -160,8 +160,8 @@ onMounted(() => {
             <tr>
               <th class="p-8 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">{{ t('product.col_sku') }}</th>
               <th class="p-8 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">{{ t('product.col_name') }}</th>
-              <th class="p-8 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">หมวดหมู่</th>
-              <th class="p-8 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-center">สถานะการขาย</th>
+              <th class="p-8 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">{{ t('product.col_category')}}</th>
+              <th class="p-8 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-center">{{ t('product.col_sales_status') }}</th>
               <th class="p-8 text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] text-center">{{ t('common.actions') }}</th>
             </tr>
           </thead>
@@ -239,8 +239,8 @@ onMounted(() => {
       :is-open="deleteModal.show"
       :title="deleteModal.title"
       :message="deleteModal.message"
-      confirm-text="ยืนยันการลบถาวร"
-      cancel-text="ยกเลิก"
+      :confirm-text="t('common.confirm_hard_delete')"
+      :cancel-text="t('common.cancel')"
       variant="danger"
       @confirm="handleConfirmHardDelete"
       @cancel="deleteModal.show = false"

@@ -93,8 +93,8 @@ const handleToggleStatus = async (item: ICategory) => {
     loading.value = true;
     const newStatus = !item.isActive;
     await CategoryService.update(item.id, { isActive: newStatus });
-    
-    toast.success(newStatus ? 'เปิดใช้งานหมวดหมู่แล้ว' : 'ปิดใช้งานหมวดหมู่แล้ว');
+  
+    toast.success(newStatus ? t('category.activate_success') : t('category.deactivate_success'));
     fetchCategories(pagination.value.page);
   } catch (err: any) {
     toast.error(t('common.error'));
@@ -107,7 +107,7 @@ const triggerHardDelete = (item: ICategory) => {
   const displayName = locale.value === 'th' ? item.nameTh : item.nameEn;
   deleteModal.id = item.id;
   deleteModal.title = t('common.delete_hard');
-  deleteModal.message = t('common.delete_warning') + ` (${displayName})`;
+  deleteModal.message = t('category.delete_hard_confirm', { name: displayName });
   deleteModal.show = true;
 };
 
