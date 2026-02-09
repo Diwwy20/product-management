@@ -42,9 +42,9 @@ A robust Full-Stack Web Application for managing products and categories, featur
 
 Before running the application, ensure you have the following installed:
 
-1. **Node.js**: Version 18.0.0 or higher.
+1. **Node.js**: Version 22.19.0 or higher (LTS recommended).
+   - **Tip**: This project includes an `.nvmrc` file. You can run `nvm use` to switch to the required version automatically.
 2. **MongoDB**: Local instance or MongoDB Atlas connection string.
-3. **SMTP Server**: A valid account (e.g., Gmail App Password) for sending OTP emails.
 
 ---
 
