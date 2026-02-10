@@ -124,17 +124,18 @@ I implemented a **Layered Architecture** (Controller-Service-Repository) pattern
 ```
 backend/src/
 ├── config/          # Database & Environment configs
-├── controllers/     # Handles incoming HTTP requests and responses
-├── interfaces/      # Service contracts (e.g., IAIService) & Payload types
-├── middleware/      # Centralized Error Handling & Zod Request Validation
+├── constants/       # Global Enums (HttpCodes, Roles)
+├── controllers/     # Handling incoming HTTP requests and responses
+├── database/        # DB connection setup
+├── interfaces/      # Service contracts & Payload types
+├── middlewares/     # Auth, Upload (Multer), & Global Error Handling
 ├── models/          # Mongoose Schemas (Data Layer)
 ├── repositories/    # Database interactions (DAL) - abstracts DB logic
 ├── routes/          # API Route definitions
-├── services/        # Business logic & AI Integration (Ollama)
-├── utils/           # Utility classes (AppError)
-├── validators/      # Zod Schemas for strict input validation
-└── app.ts           # Express app setup
-└── server.ts        # Start Server
+├── services/        # Business logic & Email integration
+├── templates/       # Email HTML templates
+├── utils/           # Utility classes (Tokens, Passwords, AppError)
+└── index.ts         # Application entry point
 ```
 
 #### Frontend Structure
