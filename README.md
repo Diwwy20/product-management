@@ -68,21 +68,27 @@ npm install
 ```language
 PORT=5000
 NODE_ENV="development"
+
+# Database - Replace with your local MongoDB or Atlas URI
 MONGO_URI="mongodb://localhost:27017/product-management"
+
 API_PREFIX="/api"
 
+# Generate these using: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ACCESS_TOKEN_SECRET="dbf0b021841bd9098dda92c629dc8dee7a0d5650662e67263c7d1af1f0bfc831febd82139d4c9a140bd1ee16132d0822902545411368e082e7a232f5f992ba9c"
 REFRESH_TOKEN_SECRET="b96dd8233b5ff6acb714afa1ca538d0eb3064fa531958f124d998dc74e6416bef9d15be38d037a5074741505e34327153075813b225c38f93fa8af984279a8ca"
+
 ACCESS_TOKEN_EXPIRES_IN="15m"
 REFRESH_TOKEN_EXPIRES_IN="7d"
 
+# SMTP Configuration
 SMTP_USER="sirawit.phaimuang@gmail.com"
 SMTP_PASS="g w b z l a m w q k u f e x q s"
 
 FRONTEND_URL="http://localhost:5173"
 
-COOKIE_SECURE=false
-COOKIE_SAME_SITE="lax"
+COOKIE_SECURE=false # Set to true in production
+COOKIE_SAME_SITE="lax" 
 ```
 
 Start the Server:
@@ -138,16 +144,17 @@ Using Vue 3 with a feature-based organization and Pinia for global state managem
 
 ```
 frontend/src/
-├── api/             # Axios instance & Interceptors logic
-├── components/      # Reusable UI components (Sidebar, Modals)
-├── constants/       # Global app constants & Paths
-├── interfaces/      # TypeScript interfaces
-├── layouts/         # Main application layout
-├── locales/         # i18n JSON files for TH/EN
-├── services/        # API communication services
-├── stores/          # Pinia stores (Auth, etc.)
-├── utils/           # Formatting & Helper utilities
-└── views/           # Page components
+├── api/             # Axios instance with Refresh Token Interceptors
+├── components/      # Reusable UI components (Modals, Navigation)
+├── constants/       # App paths & Constant definitions
+├── interfaces/      # TypeScript interfaces for API responses
+├── layouts/         # MainLayout with Sidebar & Header integration
+├── locales/         # i18n localization files (TH/EN)
+├── router/          # Vue Router with Navigation Guards (Auth/Role)
+├── services/        # API communication logic
+├── stores/          # Pinia stores (Authentication state)
+├── utils/           # Image URL formatting & Helper functions
+└── views/           # Page components (Auth, Products, Categories)
 ```
 
 ---
