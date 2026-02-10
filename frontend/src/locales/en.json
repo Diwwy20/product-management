@@ -14,7 +14,8 @@
     "delete_soft": "Move to Trash (Soft Delete)",
     "delete_hard": "Permanently Delete",
     "delete_warning": "Permanently deleting this item cannot be undone. Are you sure you want to proceed?",
-    "password_match_error": "Passwords do not match. Please try again."
+    "password_match_error": "Passwords do not match. Please try again.",
+    "confirm_hard_delete": "Confirm Permanent Delete"
   },
   "auth": {
     "login": "Log in",
@@ -91,7 +92,10 @@
     "delete_confirm": "Are you sure you want to delete {name}?",
     "delete_success": "Category deleted successfully",
     "save_success": "Category saved successfully",
-    "no_data": "No category data found"
+    "no_data": "No category data found",
+    "activate_success": "Category activated successfully",
+    "deactivate_success": "Category deactivated successfully",
+    "delete_hard_confirm": "You are about to permanently delete category \"{name}\". All related products will also be deleted. Proceed?"
   },
   "product": {
     "title": "Product Management",
@@ -124,7 +128,11 @@
     "description": "Description",
     "specification": "Specification",
     "last_updated": "Last updated on",
-    "error_max_images": "You can upload a maximum of 5 images"
+    "error_max_images": "You can upload a maximum of 5 images",
+    "col_sales_status": "Sales Status",
+    "activate_success": "Product sales activated",
+    "deactivate_success": "Product sales deactivated",
+    "delete_hard_confirm": "You are about to permanently delete product \"{name}\". All stock data and images will be lost. Proceed?"
   },
   "profile": {
     "title": "Profile Management",
