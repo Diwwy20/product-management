@@ -67,8 +67,9 @@ npm install
 
 **Configuration (.env):** Create a .env file in the backend directory.
 
-> **Note for Evaluators:** For security reasons, sensitive keys (Secrets and API Keys) are not included in this repository. Please refer to the **Google Drive link** provided in the assessment submission email to retrieve the full configuration values for testing.
-```language
+> [!IMPORTANT]
+> **Note for Evaluators:** For security reasons, sensitive keys (JWT Secrets and Brevo API Keys) are NOT included in this repository. Please refer to the **Google Drive link** provided in your **assessment submission email** to retrieve the actual configuration values for testing.
+```env
 PORT=5000
 NODE_ENV="development"
 MONGO_URI="mongodb://localhost:27017/product-management"
@@ -81,7 +82,7 @@ REFRESH_TOKEN_SECRET=
 ACCESS_TOKEN_EXPIRES_IN="15m"
 REFRESH_TOKEN_EXPIRES_IN="7d"
 
-# Email Service (Brevo API)
+# Email Service (Brevo API) -> Refer to Google Drive for actual values
 BREVO_API_KEY=
 BREVO_SENDER_EMAIL=
 BREVO_SENDER_NAME=
@@ -107,8 +108,8 @@ npm install
 
 **Configuration (.env):** Create a .env file in the frontend directory.
 
-> **Note for Evaluators:** For your convenience, the testing keys and secrets are pre-filled below so the application can be tested immediately without additional configuration. (In a production environment, these secrets should be kept private and never committed to version control).
-```language
+> **Note for Evaluators:** For your convenience, the basic environment configurations are pre-filled below so the application can be tested locally without additional setup.
+```env
 VITE_API_URL=http://localhost:5000/api/v1
 VITE_UPLOAD_URL=http://localhost:5000
 ```
