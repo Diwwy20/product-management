@@ -119,10 +119,31 @@ npm run dev
 # Application runs on http://localhost:3000
 ```
 
+---
+
+## 🕹️ How to Test (Demo Mode)
+
+To make the evaluation process as smooth as possible, the backend includes an **Automatic Database Seeder**. On the first run, the system will automatically create 4 pre-verified test accounts (2 Admins and 2 Users).
+
+### 🔑 Demo Credentials
+All accounts use the same password: `123456Ab`
+
+| Role | Email | Purpose |
+| :--- | :--- | :--- |
+| **Admin** | `admin.test1@gmail.com` | Full access to Product & Category management |
+| **Admin** | `admin.test2@gmail.com` | Secondary admin account for testing |
+| **User** | `user.test1@gmail.com` | Regular customer view (Browse products/Profile) |
+| **User** | `user.test2@gmail.com` | Standard user account |
+
+> **Note:** These accounts are marked as `isVerified: true` by default, so you can bypass the OTP email verification step during your evaluation.
+
+---
+
 ## Project Architecture & Design Decisions
 #### Backend Structure
 I implemented a **Layered Architecture** (Controller-Service-Repository) pattern to ensure separation of concerns and maintainability.
 ```
+
 backend/src/
 ├── config/          # Database & Environment configs
 ├── constants/       # Global Enums (HttpCodes, Roles)
