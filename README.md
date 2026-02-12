@@ -64,30 +64,27 @@ npm install
 
 **Configuration (.env):** Create a .env file in the backend directory.
 
-> **Note for Evaluators:** For your convenience, the testing keys and secrets are pre-filled below so the application can be tested immediately without additional configuration. (In a production environment, these secrets should be kept private and never committed to version control).
+> **Note for Evaluators:** For security reasons, sensitive keys (Secrets and API Keys) are not included in this repository. Please refer to the **Google Drive link** provided in the assessment submission email to retrieve the full configuration values for testing.
 ```language
 PORT=5000
 NODE_ENV="development"
-
-# Database - Replace with your local MongoDB or Atlas URI
 MONGO_URI="mongodb://localhost:27017/product-management"
-
 API_PREFIX="/api"
 
-# Generate these using: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-ACCESS_TOKEN_SECRET="dbf0b021841bd9098dda92c629dc8dee7a0d5650662e67263c7d1af1f0bfc831febd82139d4c9a140bd1ee16132d0822902545411368e082e7a232f5f992ba9c"
-REFRESH_TOKEN_SECRET="b96dd8233b5ff6acb714afa1ca538d0eb3064fa531958f124d998dc74e6416bef9d15be38d037a5074741505e34327153075813b225c38f93fa8af984279a8ca"
+# JWT Secrets -> Gen key use command (node -e "console.log(require('crypto').randomBytes(64).toString('hex'))")
+ACCESS_TOKEN_SECRET=
+REFRESH_TOKEN_SECRET=
 
 ACCESS_TOKEN_EXPIRES_IN="15m"
 REFRESH_TOKEN_EXPIRES_IN="7d"
 
-# SMTP Configuration
-SMTP_USER="sirawit.phaimuang@gmail.com"
-SMTP_PASS="g w b z l a m w q k u f e x q s"
+# Email Service (Brevo API)
+BREVO_API_KEY=
+BREVO_SENDER_EMAIL=
+BREVO_SENDER_NAME=
 
 FRONTEND_URL="http://localhost:5173"
-
-COOKIE_SECURE=false # Set to true in production
+COOKIE_SECURE=false
 COOKIE_SAME_SITE="lax" 
 ```
 
