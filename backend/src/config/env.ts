@@ -17,11 +17,10 @@ interface EnvConfig {
     REFRESH_EXPIRES: ExpiresInString | number;
   };
 
-  SMTP: {
-    HOST: string;
-    PORT: number;
-    USER: string;
-    PASS: string;
+  BREVO: {
+    API_KEY: string;
+    SENDER_EMAIL: string;
+    SENDER_NAME: string;
   };
 
   FRONTEND_URL: string;
@@ -46,11 +45,11 @@ export const config: EnvConfig = {
       (process.env.JWT_REFRESH_EXPIRES_IN as ExpiresInString) || "7d",
   },
 
-  SMTP: {
-    HOST: process.env.SMTP_HOST || "smtp.gmail.com",
-    PORT: parseInt(process.env.SMTP_PORT || "587", 10),
-    USER: process.env.SMTP_USER || "",
-    PASS: process.env.SMTP_PASS || "",
+  BREVO: {
+    API_KEY: process.env.BREVO_API_KEY || "",
+    SENDER_EMAIL:
+      process.env.BREVO_SENDER_EMAIL || "sirawit.phaimuang@gmail.com",
+    SENDER_NAME: process.env.BREVO_SENDER_NAME || "Senior Store",
   },
 
   FRONTEND_URL: process.env.FRONTEND_URL || "http://localhost:5173",
