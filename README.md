@@ -13,7 +13,10 @@ A robust Full-Stack Web Application for managing products and categories, featur
     - **Category Association:** Assign products to specific categories with an easy-to-use interface.
 - **Category Management:**
     - Dedicated dashboard to manage product categories and their active/inactive status.
-- **Flexible Deletion:** - Support for both **Soft Delete** (moving to trash) and **Hard Delete** (permanent removal) to ensure data safety.
+- **Flexible Deletion & Status Management:**
+    - **Soft Delete (Logic-based):** Instead of removing records permanently, the system updates the `isActive` status to `false` and records a `deletedAt` timestamp. This preserves **Data Integrity** and keeps historical data available for administrative auditing.
+    - **Administrative Control:** Admins can easily toggle products or categories on/off without losing data, providing flexible control over what is displayed on the frontend.
+    - **Hard Delete (Permanent):** Supports permanent removal of records from the database via the `?mode=hard` query parameter for cases where complete data cleanup is required.
 - **Multilingual Support:** Fully integrated **Thai & English** localization using Vue-i18n for a seamless global experience.
 - **Layered Architecture:** Built with a clean separation of concerns for scalability and maintainability.
 
